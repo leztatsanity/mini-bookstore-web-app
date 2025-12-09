@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Shop & User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input[type="text"], input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .book {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .book:last-child {
+            border-bottom: none;
+        }
+        hr {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book Shop & User Management</h1>
+
+    <div class="container">
+        <h2>Register New User</h2>
+        <input type="text" id="regUsername" placeholder="Username">
+        <input type="password" id="regPassword" placeholder="Password">
+        <button onclick="registerUser()">Register</button>
+        <div class="message" id="regMessage"></div>
+    </div>
+
+    <div class="container">
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="loginUser()">Login</button>
+        <div class="message" id="loginMessage"></div>
+    </div>
+
+    <hr>
+
+    <div class="container">
+        <h2>All Books</h2>
+        <button onclick="showAllBooks()">Show All Books</button>
+        <div class="message" id="allBooksMessage"></div>
+        <div id="allBooksList"></div>
+    </div>
+
+    <div class="container">
+        <h2>Search by ISBN</h2>
+        <input type="text" id="isbn" placeholder="Enter ISBN">
+        <button onclick="searchByISBN()">Search ISBN</button>
+        <div class="message" id="isbnMessage"></div>
+    </div>
+
+    <div class="container">
+        <h2>Search by Author</h2>
+        <input type="text" id="author" placeholder="Enter author name">
+        <button onclick="searchByAuthor()">Search Author</button>
+        <div class="message" id="authorMessage"></div>
+        <div id="authorBooksList"></div>
+    </div>
+
+    <div class="container">
+        <h2>Search by Title</h2>
+        <input type="text" id="title" placeholder="Enter book title">
+        <button onclick="searchByTitle()">Search Title</button>
+        <div class="message" id="titleMessage"></div>
+        <div id="titleBooksList"></div>
+    </div>
+
+    <script>
+        const books = [
+            { isbn: '9780141182636', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald' },
+            { isbn: '9780060935467', title: 'To Kill a Mockingbird', author: 'Harper Lee' },
+            { isbn: '9780451524935', title: '1984', author: 'George Orwell' },
+            { isbn: '9780747532699', title: "Harry Potter and the Sorcerer's Stone", author: 'J.K. Rowling' },
+            { isbn: '9780451526342', title: 'Animal Farm', author: 'George Orwell' }
+        ];
+
+        const users = [];
+
+        function registerUser() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const messageDiv = document.getElementById('regMessage');
+
+            if (!username || !password) {
+                messageDiv.textContent = 'Please fill both fields.';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            if (users.find(u => u.username === username)) {
+                messageDiv.textContent = 'Username already exists.';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            users.push({ username, password });
+            messageDiv.textContent = `User "${username}" registered successfully!`;
+            messageDiv.className = 'message success';
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+        }
+
+        function loginUser() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const messageDiv = document.getElementById('loginMessage');
+
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                messageDiv.textContent = `Welcome, ${username}!`;
+                messageDiv.className = 'message success';
+            } else {
+                messageDiv.textContent = 'Invalid username or password.';
+                messageDiv.className = 'message error';
+            }
+        }
+
+        function showAllBooks() {
+            const listDiv = document.getElementById('allBooksList');
+            const messageDiv = document.getElementById('allBooksMessage');
+            listDiv.innerHTML = '';
+            messageDiv.textContent = 'Loading all books...';
+            messageDiv.className = 'message';
+
+            setTimeout(() => {
+                messageDiv.textContent = 'All books:';
+                messageDiv.className = 'message success';
+                books.forEach((book, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'book';
+                    div.textContent = `${index + 1}. ${book.title} by ${book.author} (ISBN: ${book.isbn})`;
+                    listDiv.appendChild(div);
+                });
+            }, 1000);
+        }
+
+        function searchByISBN() {
+            const isbn = document.getElementById('isbn').value.trim();
+            const messageDiv = document.getElementById('isbnMessage');
+            messageDiv.textContent = 'Searching...';
+            messageDiv.className = 'message';
+
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const book = books.find(b => b.isbn === isbn);
+                    book ? resolve(book) : reject('Book not found.');
+                }, 1000);
+            })
+            .then(book => {
+                messageDiv.textContent = `Found: ${book.title} by ${book.author}`;
+                messageDiv.className = 'message success';
+            })
+            .catch(err => {
+                messageDiv.textContent = err;
+                messageDiv.className = 'message error';
+            });
+        }
+
+        function searchByAuthor() {
+            const author = document.getElementById('author').value.trim();
+            const messageDiv = document.getElementById('authorMessage');
+            const listDiv = document.getElementById('authorBooksList');
+            messageDiv.textContent = 'Searching...';
+            messageDiv.className = 'message';
+            listDiv.innerHTML = '';
+
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const matched = books.filter(b => b.author.toLowerCase().includes(author.toLowerCase()));
+                    matched.length > 0 ? resolve(matched) : reject('No books found.');
+                }, 1000);
+            })
+            .then(books => {
+                messageDiv.textContent = `Books by "${author}":`;
+                messageDiv.className = 'message success';
+                books.forEach(book => {
+                    const div = document.createElement('div');
+                    div.className = 'book';
+                    div.textContent = `${book.title} (ISBN: ${book.isbn})`;
+                    listDiv.appendChild(div);
+                });
+            })
+            .catch(err => {
+                messageDiv.textContent = err;
+                messageDiv.className = 'message error';
+            });
+        }
+
+        function searchByTitle() {
+            const title = document.getElementById('title').value.trim();
+            const messageDiv = document.getElementById('titleMessage');
+            const listDiv = document.getElementById('titleBooksList');
+            messageDiv.textContent = 'Searching...';
+            messageDiv.className = 'message';
+            listDiv.innerHTML = '';
+
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const matched = books.filter(b => b.title.toLowerCase().includes(title.toLowerCase()));
+                    matched.length > 0 ? resolve(matched) : reject('No books found.');
+                }, 1000);
+            })
+            .then(books => {
+                messageDiv.textContent = `Books matching "${title}":`;
+                messageDiv.className = 'message success';
+                books.forEach(book => {
+                    const div = document.createElement('div');
+                    div.className = 'book';
+                    div.textContent = `${book.title} by ${book.author} (ISBN: ${book.isbn})`;
+                    listDiv.appendChild(div);
+                });
+            })
+            .catch(err => {
+                messageDiv.textContent = err;
+                messageDiv.className = 'message error';
+            });
+        }
+    </script>
+</body>
+</html>
